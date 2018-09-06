@@ -21,6 +21,7 @@ export default {
   },
   props: {
     disable: Boolean,
+    hideOnDisable: Boolean,
     popup: Boolean,
     indent: Boolean,
     group: String,
@@ -53,6 +54,11 @@ export default {
     showing (val) {
       if (val && this.group) {
         this.$root.$emit(eventName, this)
+      }
+    },
+    disable (val) {
+      if (val && this.hideOnDisable) {
+        this.hide()
       }
     }
   },
