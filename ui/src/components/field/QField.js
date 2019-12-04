@@ -8,11 +8,6 @@ import DarkMixin from '../../mixins/dark.js'
 import { slot } from '../../utils/slot.js'
 import uid from '../../utils/uid.js'
 import { stop, prevent } from '../../utils/event.js'
-import { fromSSR } from '../../plugins/Platform.js'
-
-function getTargetUid (val) {
-  return val === void 0 ? `f_${uid()}` : val
-}
 
 export default Vue.extend({
   name: 'QField',
@@ -52,6 +47,7 @@ export default Vue.extend({
 
     clearable: Boolean,
     clearIcon: String,
+    clearValue: null,
 
     disable: Boolean,
     readonly: Boolean,
@@ -66,19 +62,11 @@ export default Vue.extend({
   data () {
     return {
       focused: false,
-      targetUid: getTargetUid(this.for),
 
       // used internally by validation for QInput
       // or menu handling for QSelect
-      innerLoading: false
-    }
-  },
-
-  watch: {
-    for (val) {
-      // don't transform targetUid into a computed
-      // prop as it will break SSR
-      this.targetUid = getTargetUid(val)
+      innerLoading: false,
+      targetUid: this.for === void 0 ? `f_${uid()}` : this.for
     }
   },
 
@@ -315,7 +303,7 @@ export default Vue.extend({
             staticClass: 'q-field__native row',
             attrs: {
               ...this.$attrs,
-              'data-autofocus': this.autofocus
+              autofocus: this.autofocus
             }
           }, this.$scopedSlots.control(this.controlSlotScope))
         )
@@ -451,9 +439,9 @@ export default Vue.extend({
         // as it will make the native file dialog
         // appear for another selection
         prevent(e)
-        this.$refs.input.value = null
+        this.$refs.input.value = this.clearValue
       }
-      this.$emit('input', null)
+      this.$emit('input', this.clearValue)
       this.$emit('clear', this.value)
     },
 
@@ -519,10 +507,6 @@ export default Vue.extend({
   },
 
   mounted () {
-    if (fromSSR === true && this.for === void 0) {
-      this.targetUid = getTargetUid()
-    }
-
     this.autofocus === true && this.focus()
   },
 
